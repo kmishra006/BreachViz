@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Breach Analyzer - Cybersecurity Tools</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Design System Variables */
+        :root {
+            /* Cybersecurity Dark Theme Colors */
+            --cyber-bg: #0a0a0f;
+            --cyber-surface: #1a1a2e;
+            --cyber-card: #16213e;
+            --cyber-border: #0f3460;
+            --cyber-primary: #00ff88;
+            --cyber-secondary: #ff6b6b;
+            --cyber-accent: #4ecdc4;
+            --cyber-warning: #ffa726;
+            --cyber-danger: #ef5350;
+            --cyber-text: #e8eaed;
+            --cyber-text-dim: #9aa0a6;
+            --cyber-matrix: #00ff41;
+            
+            /* Semantic Colors */
+            --color-background: var(--cyber-bg);
+            --color-surface: var(--cyber-surface);
+            --color-text: var(--cyber-text);
+            --color-text-secondary: var(--cyber-text-dim);
+            --color-primary: var(--cyber-primary);
+            --color-border: var(--cyber-border);
+            
+            /* Typography */
+            --font-family-base: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-family-mono: 'Courier New', monospace;
+            
+            /* Spacing */
+            --space-4: 4px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-20: 20px;
+            --space-24: 24px;
+            --space-32: 32px;
+            
+            /* Border Radius */
+            --radius-sm: 4px;
+            --radius-base: 8px;
+            --radius-lg: 12px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family-base);
+            background: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Matrix Rain Animation Background */
+        .matrix-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0.03;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--cyber-surface) 0%, var(--cyber-card) 100%);
+            padding: var(--space-16) var(--space-24);
+            border-bottom: 2px solid var(--cyber-primary);
+            box-shadow: 0 4px 20px rgba(0, 255, 136, 0.1);
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--cyber-primary);
+            text-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+            display: flex;
+            align-items: center;
+            gap: var(--space-12);
+        }
+
+        .header .subtitle {
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+            margin-top: var(--space-4);
+        }
+
+        /* Layout */
+        .app-container {
+            display: flex;
+            min-height: calc(100vh - 100px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--cyber-surface);
+            border-right: 2px solid var(--cyber-border);
+            padding: var(--space-24);
+        }
+
+        .nav-item {
+            display: block;
+            width: 100%;
+            padding: var(--space-16);
+            margin-bottom: var(--space-8);
+            background: transparent;
+            border: 1px solid var(--cyber-border);
+            border-radius: var(--radius-base);
+            color: var(--color-text);
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background: linear-gradient(45deg, rgba(0, 255, 136, 0.1), rgba(76, 205, 196, 0.1));
+            border-color: var(--cyber-primary);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: linear-gradient(45deg, var(--cyber-primary), var(--cyber-accent));
+            color: var(--cyber-bg);
+            border-color: var(--cyber-primary);
+            font-weight: 600;
+        }
+
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 3px;
+            background: var(--cyber-primary);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item.active::before {
+            transform: scaleY(1);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: var(--space-32);
+            overflow-y: auto;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--cyber-card);
+            border: 1px solid var(--cyber-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-24);
+            margin-bottom: var(--space-24);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--cyber-primary), var(--cyber-accent));
+        }
+
+        .card-header {
+            margin-bottom: var(--space-20);
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--cyber-primary);
+            margin-bottom: var(--space-8);
+        }
+
+        .card-description {
+            color: var(--color-text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Form Elements */
+        .form-group {
+            margin-bottom: var(--space-20);
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: var(--space-8);
+            font-weight: 500;
+            color: var(--color-text);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: var(--space-12) var(--space-16);
+            background: var(--cyber-surface);
+            border: 1px solid var(--cyber-border);
+            border-radius: var(--radius-base);
+            color: var(--color-text);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--cyber-primary);
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.2);
+        }
+
+        .form-select {
+            width: 100%;
+            padding: var(--space-12) var(--space-16);
+            background: var(--cyber-surface);
+            border: 1px solid var(--cyber-border);
+            border-radius: var(--radius-base);
+            color: var(--color-text);
+            font-size: 1rem;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: var(--space-12) var(--space-24);
+            border: none;
+            border-radius: var(--radius-base);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            gap: var(--space-8);
+        }
+
+        .btn-primary {
+            background: linear-gradient(45deg, var(--cyber-primary), var(--cyber-accent));
+            color: var(--cyber-bg);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 255, 136, 0.3);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--cyber-border);
+            color: var(--color-text);
+        }
+
+        .btn-secondary:hover {
+            background: var(--cyber-surface);
+            border-color: var(--cyber-primary);
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: var(--cyber-surface);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin: var(--space-8) 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: var(--radius-sm);
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        .progress-weak { background: var(--cyber-danger); }
+        .progress-medium { background: var(--cyber-warning); }
+        .progress-strong { background: var(--cyber-primary); }
+
+        /* Strength Meter */
+        .strength-meter {
+            margin: var(--space-16) 0;
+        }
+
+        .strength-score {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: var(--space-8);
+        }
+
+        .strength-weak { color: var(--cyber-danger); }
+        .strength-medium { color: var(--cyber-warning); }
+        .strength-strong { color: var(--cyber-primary); }
+
+        /* Results Display */
+        .result-card {
+            background: var(--cyber-surface);
+            border: 1px solid var(--cyber-border);
+            border-radius: var(--radius-base);
+            padding: var(--space-16);
+            margin-top: var(--space-16);
+        }
+
+        .breach-count {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: var(--space-8);
+        }
+
+        .breach-high { color: var(--cyber-danger); }
+        .breach-medium { color: var(--cyber-warning); }
+        .breach-low { color: var(--cyber-primary); }
+
+        /* Chart Container */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: var(--space-20) 0;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            gap: var(--space-24);
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        /* Loading Animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--cyber-border);
+            border-radius: 50%;
+            border-top: 3px solid var(--cyber-primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Tips Section */
+        .tips-container {
+            background: linear-gradient(135deg, var(--cyber-surface), var(--cyber-card));
+            border-left: 4px solid var(--cyber-primary);
+            padding: var(--space-16);
+            border-radius: 0 var(--radius-base) var(--radius-base) 0;
+            margin: var(--space-16) 0;
+        }
+
+        .tip-item {
+            margin-bottom: var(--space-8);
+            padding-left: var(--space-16);
+            position: relative;
+        }
+
+        .tip-item::before {
+            content: '▶';
+            position: absolute;
+            left: 0;
+            color: var(--cyber-primary);
+        }
+
+        /* Hash Info Display */
+        .hash-info {
+            background: var(--cyber-surface);
+            border: 1px solid var(--cyber-border);
+            border-radius: var(--radius-base);
+            padding: var(--space-12);
+            margin-top: var(--space-8);
+            font-family: var(--font-family-mono);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: var(--space-16);
+            }
+
+            .main-content {
+                padding: var(--space-16);
+            }
+
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg" id="matrixBg"></div>
+    
+    <header class="header">
+        <h1>
+            🛡️ Data Breach Analyzer
+        </h1>
+        <p class="subtitle">Advanced Cybersecurity Analysis &amp; Educational Platform</p>
+    </header>
+
+    <div class="app-container">
+        <nav class="sidebar">
+            <button class="nav-item active" data-section="dashboard">📊 Dashboard</button>
+            <button class="nav-item" data-section="breach-checker">🔍 Breach Checker</button>
+            <button class="nav-item" data-section="strength-analyzer">💪 Strength Analyzer</button>
+            <button class="nav-item" data-section="hash-cracker">🔓 Hash Cracker</button>
+            
+            <div class="tips-container" style="margin-top: 2rem;">
+                <h3 style="color: var(--cyber-primary); margin-bottom: 1rem;">Security Tips</h3>
+                <div id="securityTips"></div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <!-- Dashboard Section -->
+            <section class="section active" id="dashboard">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Security Dashboard</h2>
+                        <p class="card-description">Overview of password security statistics and analysis tools</p>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="chart-container">
+                            <h3 style="margin-bottom: 1rem; color: var(--cyber-primary);">Password Length Distribution</h3>
+                            <canvas id="lengthChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h3 style="margin-bottom: 1rem; color: var(--cyber-primary);">Character Type Usage</h3>
+                            <canvas id="characterChart"></canvas>
+                        </div>
+                        
+                        <div class="chart-container">
+                            <h3 style="margin-bottom: 1rem; color: var(--cyber-primary);">Strength Distribution</h3>
+                            <canvas id="strengthChart"></canvas>
+                        </div>
+                        
+                        <div class="card">
+                            <h3 style="margin-bottom: 1rem; color: var(--cyber-primary);">Quick Stats</h3>
+                            <div style="display: grid; gap: 1rem;">
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Total Passwords Analyzed:</span>
+                                    <span style="color: var(--cyber-primary); font-weight: bold;">1,247</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Average Strength Score:</span>
+                                    <span style="color: var(--cyber-warning); font-weight: bold;">68/100</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Breached Passwords:</span>
+                                    <span style="color: var(--cyber-danger); font-weight: bold;">156</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between;">
+                                    <span>Secure Passwords:</span>
+                                    <span style="color: var(--cyber-primary); font-weight: bold;">891</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Breach Checker Section -->
+            <section class="section" id="breach-checker">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Password Breach Checker</h2>
+                        <p class="card-description">Check if your password has been compromised in known data breaches</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="breachPassword">Enter Password to Check:</label>
+                        <input type="password" class="form-input" id="breachPassword" placeholder="Enter password (will be masked)">
+                        <small style="color: var(--color-text-secondary); margin-top: 0.5rem; display: block;">
+                            🔒 Your password is processed locally and never sent to external servers
+                        </small>
+                    </div>
+                    
+                    <button class="btn btn-primary" onclick="checkBreach()">
+                        <span id="breachBtnText">Check for Breaches</span>
+                        <div class="loading" id="breachLoading" style="display: none;"></div>
+                    </button>
+                    
+                    <div class="result-card" id="breachResults" style="display: none;">
+                        <h3 id="breachTitle"></h3>
+                        <div class="breach-count" id="breachCount"></div>
+                        <p id="breachDescription"></p>
+                        <div id="breachRecommendations"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Strength Analyzer Section -->
+            <section class="section" id="strength-analyzer">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Password Strength Analyzer</h2>
+                        <p class="card-description">Real-time analysis of password strength and security</p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="strengthPassword">Enter Password to Analyze:</label>
+                        <input type="password" class="form-input" id="strengthPassword" 
+                               placeholder="Type password for real-time analysis" 
+                               oninput="analyzeStrength()">
+                    </div>
+                    
+                    <div class="strength-meter">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3>Strength Score</h3>
+                            <div class="strength-score" id="strengthScore">0/100</div>
+                        </div>
+                        <div class="progress-container">
+                            <div class="progress-bar" id="strengthProgress"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div class="result-card">
+                            <h4 style="color: var(--cyber-primary); margin-bottom: 1rem;">Analysis Details</h4>
+                            <div id="strengthDetails">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Length:</span>
+                                    <span id="lengthDetail">0 characters</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Entropy:</span>
+                                    <span id="entropyDetail">0 bits</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Estimated Crack Time:</span>
+                                    <span id="crackTimeDetail">Instant</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="result-card">
+                            <h4 style="color: var(--cyber-primary); margin-bottom: 1rem;">Character Analysis</h4>
+                            <div id="characterAnalysis">
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Uppercase:</span>
+                                    <span id="uppercaseCount">0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Lowercase:</span>
+                                    <span id="lowercaseCount">0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Numbers:</span>
+                                    <span id="numberCount">0</span>
+                                </div>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                    <span>Symbols:</span>
+                                    <span id="symbolCount">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card" id="strengthRecommendations">
+                        <h4 style="color: var(--cyber-primary); margin-bottom: 1rem;">Recommendations</h4>
+                        <div id="recommendationsList"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Hash Cracker Section -->
+            <section class="section" id="hash-cracker">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Hash Cracking Simulator</h2>
+                        <p class="card-description">Educational tool to demonstrate hash vulnerabilities and attack methods</p>
+                    </div>
+                    
+                    <div class="grid grid-2">
+                        <div>
+                            <div class="form-group">
+                                <label class="form-label" for="hashInput">Enter Hash to Crack:</label>
+                                <input type="text" class="form-input" id="hashInput" 
+                                       placeholder="Enter hash or select sample">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="hashType">Hash Type:</label>
+                                <select class="form-select" id="hashType" onchange="updateHashInfo()">
+                                    <option value="md5">MD5 (128-bit)</option>
+                                    <option value="sha1">SHA-1 (160-bit)</option>
+                                    <option value="sha256">SHA-256 (256-bit)</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="attackMethod">Attack Method:</label>
+                                <select class="form-select" id="attackMethod">
+                                    <option value="dictionary">Dictionary Attack</option>
+                                    <option value="brute-force">Brute Force Attack</option>
+                                </select>
+                            </div>
+                            
+                            <button class="btn btn-primary" onclick="startHashCrack()">
+                                <span id="crackBtnText">Start Cracking</span>
+                                <div class="loading" id="crackLoading" style="display: none;"></div>
+                            </button>
+                            
+                            <button class="btn btn-secondary" onclick="loadSampleHash()" style="margin-left: 1rem;">
+                                Load Sample Hash
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <div class="hash-info" id="hashInfo">
+                                <h4 style="color: var(--cyber-primary); margin-bottom: 0.5rem;">Hash Information</h4>
+                                <div id="hashDetails"></div>
+                            </div>
+                            
+                            <div class="result-card" id="crackProgress" style="display: none;">
+                                <h4>Cracking Progress</h4>
+                                <div class="progress-container">
+                                    <div class="progress-bar progress-medium" id="crackProgressBar"></div>
+                                </div>
+                                <p id="crackStatus">Initializing attack...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="result-card" id="crackResults" style="display: none;">
+                        <h3 id="crackResultTitle"></h3>
+                        <div id="crackResultContent"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        // Sample Data
+        const sampleData = {
+            commonPasswords: [
+                "password", "123456", "password123", "admin", "qwerty", 
+                "letmein", "welcome", "monkey", "dragon", "master"
+            ],
+            sampleHashes: {
+                md5: { hash: "5d41402abc4b2a76b9719d911017c592", password: "hello" },
+                sha1: { hash: "aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d", password: "hello" },
+                sha256: { hash: "2cf24dba4f21d4288094c14b30e0c2ec67ad65d5daae1a037626c098db66f536", password: "hello" }
+            },
+            breachData: {
+                "password": 9545824,
+                "123456": 23597311,
+                "admin": 2593818,
+                "qwerty": 3912816,
+                "letmein": 500000,
+                "welcome": 250000
+            },
+            securityTips: [
+                "Use at least 12 characters for strong passwords",
+                "Include uppercase, lowercase, numbers and symbols",
+                "Avoid dictionary words and personal information",
+                "Use unique passwords for each account",
+                "Enable two-factor authentication when available"
+            ],
+            hashInfo: {
+                md5: { bits: 128, security: "Broken - Do not use", speed: "Very Fast to crack" },
+                sha1: { bits: 160, security: "Broken - Avoid", speed: "Fast to crack" },
+                sha256: { bits: 256, security: "Secure", speed: "Slow to crack" }
+            },
+            visualizationData: {
+                lengthDistribution: [
+                    { length: 6, count: 150 }, { length: 7, count: 200 },
+                    { length: 8, count: 350 }, { length: 9, count: 180 }, { length: 10, count: 120 }
+                ],
+                characterUsage: { uppercase: 45, lowercase: 78, numbers: 62, symbols: 23 },
+                strengthDistribution: { weak: 35, medium: 42, strong: 23 }
+            }
+        };
+
+        let charts = {};
+
+        // Initialize Application
+        document.addEventListener('DOMContentLoaded', function() {
+            setupNavigation();
+            loadSecurityTips();
+            initializeCharts();
+            updateHashInfo();
+        });
+
+        // Navigation
+        function setupNavigation() {
+            const navItems = document.querySelectorAll('.nav-item');
+            const sections = document.querySelectorAll('.section');
+
+            navItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetSection = this.getAttribute('data-section');
+                    
+                    // Update navigation
+                    navItems.forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Update sections
+                    sections.forEach(section => section.classList.remove('active'));
+                    document.getElementById(targetSection).classList.add('active');
+                    
+                    // Reinitialize charts if dashboard is selected
+                    if (targetSection === 'dashboard') {
+                        setTimeout(initializeCharts, 100);
+                    }
+                });
+            });
+        }
+
+        // Load Security Tips
+        function loadSecurityTips() {
+            const tipsContainer = document.getElementById('securityTips');
+            const tips = sampleData.securityTips.slice(0, 3); // Show first 3 tips
+            
+            tipsContainer.innerHTML = tips.map(tip => 
+                `<div class="tip-item">${tip}</div>`
+            ).join('');
+        }
+
+        // Initialize Charts
+        function initializeCharts() {
+            // Destroy existing charts
+            Object.values(charts).forEach(chart => {
+                if (chart) chart.destroy();
+            });
+
+            const chartColors = ['#1FB8CD', '#FFC185', '#B4413C', '#ECEBD5', '#5D878F'];
+
+            // Length Distribution Chart
+            const lengthCtx = document.getElementById('lengthChart');
+            if (lengthCtx) {
+                charts.length = new Chart(lengthCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: sampleData.visualizationData.lengthDistribution.map(d => d.length + ' chars'),
+                        datasets: [{
+                            label: 'Password Count',
+                            data: sampleData.visualizationData.lengthDistribution.map(d => d.count),
+                            backgroundColor: chartColors[0],
+                            borderColor: chartColors[0],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false }
+                        },
+                        scales: {
+                            y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.1)' } },
+                            x: { grid: { color: 'rgba(255,255,255,0.1)' } }
+                        }
+                    }
+                });
+            }
+
+            // Character Usage Pie Chart
+            const charCtx = document.getElementById('characterChart');
+            if (charCtx) {
+                const charData = sampleData.visualizationData.characterUsage;
+                charts.character = new Chart(charCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: ['Uppercase', 'Lowercase', 'Numbers', 'Symbols'],
+                        datasets: [{
+                            data: [charData.uppercase, charData.lowercase, charData.numbers, charData.symbols],
+                            backgroundColor: chartColors
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+
+            // Strength Distribution Chart
+            const strengthCtx = document.getElementById('strengthChart');
+            if (strengthCtx) {
+                const strengthData = sampleData.visualizationData.strengthDistribution;
+                charts.strength = new Chart(strengthCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Weak', 'Medium', 'Strong'],
+                        datasets: [{
+                            data: [strengthData.weak, strengthData.medium, strengthData.strong],
+                            backgroundColor: ['#ef5350', '#ffa726', '#00ff88']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
+                    }
+                });
+            }
+        }
+
+        // Breach Checker Functions
+        async function checkBreach() {
+            const password = document.getElementById('breachPassword').value;
+            const resultsDiv = document.getElementById('breachResults');
+            const loadingDiv = document.getElementById('breachLoading');
+            const btnText = document.getElementById('breachBtnText');
+
+            if (!password) {
+                alert('Please enter a password to check');
+                return;
+            }
+
+            // Show loading
+            loadingDiv.style.display = 'inline-block';
+            btnText.textContent = 'Checking...';
+            resultsDiv.style.display = 'none';
+
+            // Simulate API delay
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Check against sample breach data
+            const breachCount = sampleData.breachData[password] || 0;
+            const isCommon = sampleData.commonPasswords.includes(password);
+
+            // Display results
+            displayBreachResults(password, breachCount, isCommon);
+
+            // Reset button
+            loadingDiv.style.display = 'none';
+            btnText.textContent = 'Check for Breaches';
+        }
+
+        function displayBreachResults(password, breachCount, isCommon) {
+            const resultsDiv = document.getElementById('breachResults');
+            const titleEl = document.getElementById('breachTitle');
+            const countEl = document.getElementById('breachCount');
+            const descEl = document.getElementById('breachDescription');
+            const recEl = document.getElementById('breachRecommendations');
+
+            let riskLevel, recommendations;
+
+            if (breachCount > 1000000) {
+                riskLevel = 'HIGH RISK';
+                countEl.className = 'breach-count breach-high';
+                recommendations = [
+                    '🚨 This password has been compromised millions of times',
+                    '🔄 Change this password immediately',
+                    '🎯 Never reuse this password again',
+                    '🔐 Use a unique, complex password instead'
+                ];
+            } else if (breachCount > 0) {
+                riskLevel = 'MEDIUM RISK';
+                countEl.className = 'breach-count breach-medium';
+                recommendations = [
+                    '⚠️ This password has been found in data breaches',
+                    '🔄 Consider changing this password',
+                    '📝 Use a more unique password'
+                ];
+            } else if (isCommon) {
+                riskLevel = 'LOW-MEDIUM RISK';
+                countEl.className = 'breach-count breach-medium';
+                recommendations = [
+                    '📋 This is a common password pattern',
+                    '💡 Consider making it more unique',
+                    '🎲 Add random characters or numbers'
+                ];
+            } else {
+                riskLevel = 'LOW RISK';
+                countEl.className = 'breach-count breach-low';
+                recommendations = [
+                    '✅ No breaches found for this password',
+                    '🎯 Continue using strong, unique passwords',
+                    '🔐 Consider enabling 2FA for extra security'
+                ];
+            }
+
+            titleEl.textContent = riskLevel;
+            countEl.textContent = breachCount > 0 ? `Found in ${breachCount.toLocaleString()} breaches` : 'No breaches found';
+            descEl.textContent = breachCount > 0 ? 
+                'This password has appeared in known data breaches and should not be used.' :
+                'This password was not found in our breach database.';
+            
+            recEl.innerHTML = recommendations.map(rec => `<div class="tip-item">${rec}</div>`).join('');
+            resultsDiv.style.display = 'block';
+        }
+
+        // Password Strength Analyzer
+        function analyzeStrength() {
+            const password = document.getElementById('strengthPassword').value;
+            
+            if (!password) {
+                resetStrengthDisplay();
+                return;
+            }
+
+            const analysis = calculatePasswordStrength(password);
+            displayStrengthResults(analysis);
+        }
+
+        function calculatePasswordStrength(password) {
+            let score = 0;
+            let feedback = [];
+            
+            // Length analysis
+            const length = password.length;
+            if (length >= 12) score += 25;
+            else if (length >= 8) score += 15;
+            else if (length >= 6) score += 5;
+            else feedback.push('Use at least 8 characters (12+ recommended)');
+
+            // Character diversity
+            const hasUpper = /[A-Z]/.test(password);
+            const hasLower = /[a-z]/.test(password);
+            const hasNumber = /\d/.test(password);
+            const hasSymbol = /[^A-Za-z0-9]/.test(password);
+            
+            let charTypes = 0;
+            if (hasUpper) charTypes++;
+            if (hasLower) charTypes++;
+            if (hasNumber) charTypes++;
+            if (hasSymbol) charTypes++;
+            
+            score += charTypes * 15;
+            
+            if (!hasUpper) feedback.push('Add uppercase letters');
+            if (!hasLower) feedback.push('Add lowercase letters');
+            if (!hasNumber) feedback.push('Add numbers');
+            if (!hasSymbol) feedback.push('Add special characters (!@#$%^&*)');
+
+            // Pattern detection
+            if (/012|123|234|345|456|567|678|789|890/.test(password)) {
+                score -= 10;
+                feedback.push('Avoid sequential numbers');
+            }
+            
+            if (/abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz/.test(password.toLowerCase())) {
+                score -= 10;
+                feedback.push('Avoid sequential letters');
+            }
+            
+            if (/(..).*\1/.test(password)) {
+                score -= 15;
+                feedback.push('Avoid repeating patterns');
+            }
+
+            // Dictionary words (simple check)
+            const commonWords = ['password', 'admin', 'user', 'login', 'welcome', 'hello', 'world'];
+            for (const word of commonWords) {
+                if (password.toLowerCase().includes(word)) {
+                    score -= 20;
+                    feedback.push('Avoid common dictionary words');
+                    break;
+                }
+            }
+
+            // Calculate entropy
+            let charset = 0;
+            if (hasLower) charset += 26;
+            if (hasUpper) charset += 26;
+            if (hasNumber) charset += 10;
+            if (hasSymbol) charset += 32;
+            
+            const entropy = length * Math.log2(charset);
+            
+            // Estimate crack time
+            const combinations = Math.pow(charset, length);
+            const crackTime = calculateCrackTime(combinations);
+
+            return {
+                score: Math.max(0, Math.min(100, score)),
+                length,
+                entropy,
+                crackTime,
+                charCounts: {
+                    uppercase: (password.match(/[A-Z]/g) || []).length,
+                    lowercase: (password.match(/[a-z]/g) || []).length,
+                    numbers: (password.match(/\d/g) || []).length,
+                    symbols: (password.match(/[^A-Za-z0-9]/g) || []).length
+                },
+                feedback
+            };
+        }
+
+        function calculateCrackTime(combinations) {
+            // Assume 1 billion guesses per second
+            const guessesPerSecond = 1e9;
+            const avgTime = combinations / (2 * guessesPerSecond);
+            
+            if (avgTime < 1) return 'Instant';
+            if (avgTime < 60) return `${Math.round(avgTime)} seconds`;
+            if (avgTime < 3600) return `${Math.round(avgTime / 60)} minutes`;
+            if (avgTime < 86400) return `${Math.round(avgTime / 3600)} hours`;
+            if (avgTime < 31536000) return `${Math.round(avgTime / 86400)} days`;
+            if (avgTime < 31536000000) return `${Math.round(avgTime / 31536000)} years`;
+            return '> 1000 years';
+        }
+
+        function displayStrengthResults(analysis) {
+            // Update score
+            const scoreEl = document.getElementById('strengthScore');
+            const progressEl = document.getElementById('strengthProgress');
+            
+            scoreEl.textContent = `${analysis.score}/100`;
+            scoreEl.className = 'strength-score ' + getStrengthClass(analysis.score);
+            
+            progressEl.style.width = `${analysis.score}%`;
+            progressEl.className = 'progress-bar ' + getProgressClass(analysis.score);
+            
+            // Update details
+            document.getElementById('lengthDetail').textContent = `${analysis.length} characters`;
+            document.getElementById('entropyDetail').textContent = `${Math.round(analysis.entropy)} bits`;
+            document.getElementById('crackTimeDetail').textContent = analysis.crackTime;
+            
+            // Update character counts
+            document.getElementById('uppercaseCount').textContent = analysis.charCounts.uppercase;
+            document.getElementById('lowercaseCount').textContent = analysis.charCounts.lowercase;
+            document.getElementById('numberCount').textContent = analysis.charCounts.numbers;
+            document.getElementById('symbolCount').textContent = analysis.charCounts.symbols;
+            
+            // Update recommendations
+            const recList = document.getElementById('recommendationsList');
+            if (analysis.feedback.length > 0) {
+                recList.innerHTML = analysis.feedback.map(item => `<div class="tip-item">${item}</div>`).join('');
+            } else {
+                recList.innerHTML = '<div class="tip-item">✅ Excellent! This password meets all security criteria.</div>';
+            }
+        }
+
+        function resetStrengthDisplay() {
+            document.getElementById('strengthScore').textContent = '0/100';
+            document.getElementById('strengthProgress').style.width = '0%';
+            document.getElementById('lengthDetail').textContent = '0 characters';
+            document.getElementById('entropyDetail').textContent = '0 bits';
+            document.getElementById('crackTimeDetail').textContent = 'Instant';
+            
+            ['uppercase', 'lowercase', 'number', 'symbol'].forEach(type => {
+                document.getElementById(type + 'Count').textContent = '0';
+            });
+            
+            document.getElementById('recommendationsList').innerHTML = '<div class="tip-item">Enter a password to see recommendations</div>';
+        }
+
+        function getStrengthClass(score) {
+            if (score < 40) return 'strength-weak';
+            if (score < 70) return 'strength-medium';
+            return 'strength-strong';
+        }
+
+        function getProgressClass(score) {
+            if (score < 40) return 'progress-weak';
+            if (score < 70) return 'progress-medium';
+            return 'progress-strong';
+        }
+
+        // Hash Cracker Functions
+        function updateHashInfo() {
+            const hashType = document.getElementById('hashType').value;
+            const info = sampleData.hashInfo[hashType];
+            const detailsEl = document.getElementById('hashDetails');
+            
+            detailsEl.innerHTML = `
+                <div><strong>Bits:</strong> ${info.bits}</div>
+                <div><strong>Security:</strong> ${info.security}</div>
+                <div><strong>Crack Speed:</strong> ${info.speed}</div>
+            `;
+        }
+
+        function loadSampleHash() {
+            const hashType = document.getElementById('hashType').value;
+            const sample = sampleData.sampleHashes[hashType];
+            document.getElementById('hashInput').value = sample.hash;
+        }
+
+        async function startHashCrack() {
+            const hash = document.getElementById('hashInput').value.trim();
+            const hashType = document.getElementById('hashType').value;
+            const attackMethod = document.getElementById('attackMethod').value;
+            
+            if (!hash) {
+                alert('Please enter a hash to crack');
+                return;
+            }
+
+            // Show progress
+            const progressDiv = document.getElementById('crackProgress');
+            const resultsDiv = document.getElementById('crackResults');
+            const loadingDiv = document.getElementById('crackLoading');
+            const btnText = document.getElementById('crackBtnText');
+            
+            progressDiv.style.display = 'block';
+            resultsDiv.style.display = 'none';
+            loadingDiv.style.display = 'inline-block';
+            btnText.textContent = 'Cracking...';
+            
+            // Simulate cracking process
+            await simulateCracking(hash, hashType, attackMethod);
+            
+            // Reset button
+            loadingDiv.style.display = 'none';
+            btnText.textContent = 'Start Cracking';
+            progressDiv.style.display = 'none';
+        }
+
+        async function simulateCracking(hash, hashType, attackMethod) {
+            const progressBar = document.getElementById('crackProgressBar');
+            const statusEl = document.getElementById('crackStatus');
+            
+            // Check if it's a known sample hash
+            const knownHash = Object.values(sampleData.sampleHashes).find(h => h.hash === hash);
+            
+            const steps = attackMethod === 'brute-force' ? 20 : 10;
+            const stepDelay = attackMethod === 'brute-force' ? 200 : 300;
+            
+            for (let i = 0; i <= steps; i++) {
+                const progress = (i / steps) * 100;
+                progressBar.style.width = `${progress}%`;
+                
+                if (i === 0) {
+                    statusEl.textContent = 'Initializing attack...';
+                } else if (i < steps / 2) {
+                    statusEl.textContent = `Loading ${attackMethod === 'dictionary' ? 'wordlist' : 'character set'}...`;
+                } else if (i < steps) {
+                    const attempts = Math.floor(Math.random() * 1000000) + 100000;
+                    statusEl.textContent = `Testing combinations... ${attempts.toLocaleString()} attempts`;
+                } else {
+                    statusEl.textContent = 'Finalizing results...';
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, stepDelay));
+            }
+            
+            // Display results
+            displayCrackResults(hash, hashType, attackMethod, knownHash);
+        }
+
+        function displayCrackResults(hash, hashType, attackMethod, knownHash) {
+            const resultsDiv = document.getElementById('crackResults');
+            const titleEl = document.getElementById('crackResultTitle');
+            const contentEl = document.getElementById('crackResultContent');
+            
+            const duration = attackMethod === 'dictionary' ? 
+                Math.floor(Math.random() * 5) + 1 : 
+                Math.floor(Math.random() * 30) + 10;
+            
+            if (knownHash) {
+                titleEl.textContent = '✅ HASH CRACKED SUCCESSFULLY!';
+                titleEl.style.color = 'var(--cyber-primary)';
+                
+                contentEl.innerHTML = `
+                    <div style="background: var(--cyber-surface); padding: 1rem; border-radius: var(--radius-base); margin: 1rem 0;">
+                        <div><strong>Original Password:</strong> <code>${knownHash.password}</code></div>
+                        <div><strong>Hash Type:</strong> ${hashType.toUpperCase()}</div>
+                        <div><strong>Attack Method:</strong> ${attackMethod.replace('-', ' ').toUpperCase()}</div>
+                        <div><strong>Time Taken:</strong> ${duration} seconds</div>
+                        <div><strong>Attempts:</strong> ${Math.floor(Math.random() * 100000).toLocaleString()}</div>
+                    </div>
+                    <div class="tips-container">
+                        <h4 style="color: var(--cyber-warning);">Security Implications:</h4>
+                        <div class="tip-item">This demonstrates why ${hashType.toUpperCase()} is ${sampleData.hashInfo[hashType].security.toLowerCase()}</div>
+                        <div class="tip-item">Simple passwords can be cracked in minutes or seconds</div>
+                        <div class="tip-item">Always use strong, unique passwords with proper hashing</div>
+                    </div>
+                `;
+            } else {
+                titleEl.textContent = '❌ CRACK ATTEMPT FAILED';
+                titleEl.style.color = 'var(--cyber-danger)';
+                
+                contentEl.innerHTML = `
+                    <div style="background: var(--cyber-surface); padding: 1rem; border-radius: var(--radius-base); margin: 1rem 0;">
+                        <div><strong>Result:</strong> Password not found</div>
+                        <div><strong>Hash Type:</strong> ${hashType.toUpperCase()}</div>
+                        <div><strong>Attack Method:</strong> ${attackMethod.replace('-', ' ').toUpperCase()}</div>
+                        <div><strong>Time Taken:</strong> ${duration} seconds</div>
+                        <div><strong>Attempts:</strong> ${Math.floor(Math.random() * 10000000).toLocaleString()}</div>
+                    </div>
+                    <div class="tips-container">
+                        <h4 style="color: var(--cyber-primary);">This is Good News!</h4>
+                        <div class="tip-item">The password appears to be strong enough to resist this attack</div>
+                        <div class="tip-item">Try using one of our sample hashes to see a successful crack</div>
+                        <div class="tip-item">Remember: Strong passwords are your first line of defense</div>
+                    </div>
+                `;
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+
+        // Matrix Rain Effect (Subtle)
+        function createMatrixRain() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const matrixBg = document.getElementById('matrixBg');
+            
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            matrixBg.appendChild(canvas);
+            
+            const chars = '01';
+            const fontSize = 14;
+            const columns = canvas.width / fontSize;
+            const drops = Array(Math.floor(columns)).fill(1);
+            
+            function draw() {
+                ctx.fillStyle = 'rgba(10, 10, 15, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = 'rgba(0, 255, 65, 0.8)';
+                ctx.font = fontSize + 'px monospace';
+                
+                for (let i = 0; i < drops.length; i++) {
+                    const text = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                    
+                    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                        drops[i] = 0;
+                    }
+                    drops[i]++;
+                }
+            }
+            
+            setInterval(draw, 50);
+            
+            // Resize handler
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
+
+        // Initialize matrix effect
+        setTimeout(createMatrixRain, 1000);
+    </script>
+</body>
+</html>
