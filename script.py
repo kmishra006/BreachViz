@@ -2,6 +2,17 @@
 import os
 import json
 
+# Load breached passwords once
+with open("breached_passwords.txt", "r", encoding="utf-8") as file:
+    breached_passwords = set(line.strip() for line in file)
+
+def check_password_risk(password):
+    """
+    Returns True if password is found in breached dataset, else False
+    """
+    return password in breached_passwords
+
+
 # Define the project structure
 project_structure = {
     "data_breach_analyzer/": {
